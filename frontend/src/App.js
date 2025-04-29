@@ -319,14 +319,14 @@ function AppContent() {
                         Dashboard
                       </MenuItem>
 
-                      <MenuItem onClick={handleUserMenuClose}>
+                      <MenuItem component={Link} to="/dashboard" onClick={handleUserMenuClose}>
                         <ListItemIcon>
                           <AccountCircleIcon fontSize="small" />
                         </ListItemIcon>
                         Profile
                       </MenuItem>
 
-                      <MenuItem onClick={handleUserMenuClose}>
+                      <MenuItem component={Link} to="/dashboard" onClick={handleUserMenuClose}>
                         <ListItemIcon>
                           <ApiIcon fontSize="small" />
                         </ListItemIcon>
@@ -335,7 +335,7 @@ function AppContent() {
                         </Typography>
                       </MenuItem>
 
-                      <MenuItem onClick={handleUserMenuClose}>
+                      <MenuItem component={Link} to="/dashboard" onClick={handleUserMenuClose}>
                         <ListItemIcon>
                           <SettingsIcon fontSize="small" />
                         </ListItemIcon>

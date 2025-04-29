@@ -48,10 +48,16 @@ export default function Login({ setUser, setIsAuth }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password })
       });
-      const data = await res.json();
+      let data;
+      try {
+        data = await res.json();
+      } catch (jsonErr) {
+        setError("Invalid server response. Please try again later.");
+        setLoading(false);
+        return;
+      }
       if (res.ok && data.access_token) {
         localStorage.setItem("token", data.access_token);
-        
         // Get user data including name from the server
         try {
           const userRes = await fetch(`${API_BASE}/api/v1/auth/user/me`, {
@@ -59,10 +65,16 @@ export default function Login({ setUser, setIsAuth }) {
               Authorization: `Bearer ${data.access_token}` 
             }
           });
-          const userData = await userRes.json();
-          
+          let userData;
+          try {
+            userData = await userRes.json();
+          } catch (jsonErr) {
+            // fallback to just email if user data fetch fails
+            localStorage.setItem("user", JSON.stringify({ email }));
+            if (setUser) setUser({ email });
+            userData = null;
+          }
           if (userRes.ok && userData) {
-            // Store complete user data including name
             localStorage.setItem("user", JSON.stringify({ 
               email: userData.email,
               name: userData.name 
@@ -72,23 +84,20 @@ export default function Login({ setUser, setIsAuth }) {
               name: userData.name 
             });
           } else {
-            // Fallback to just email if user data fetch fails
             localStorage.setItem("user", JSON.stringify({ email }));
             if (setUser) setUser({ email });
           }
         } catch (err) {
-          // Fallback to just email if user data fetch fails
           localStorage.setItem("user", JSON.stringify({ email }));
           if (setUser) setUser({ email });
         }
-        
         if (setIsAuth) setIsAuth(true);
         setSuccess("Login successful! Redirecting...");
         setEmail("");
         setPassword("");
         setTimeout(() => window.location.href = "/dashboard", 1200);
       } else {
-        setError(data.detail || "Login failed");
+        setError(data.detail || data.message || "Login failed");
       }
     } catch (err) {
       setError("Network error. Please try again later.");

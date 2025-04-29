@@ -75,7 +75,14 @@ export default function Register({ setUser, setIsAuth }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, name, password })
       });
-      const data = await res.json();
+      let data;
+      try {
+        data = await res.json();
+      } catch (jsonErr) {
+        setError("Invalid server response. Please try again later.");
+        setLoading(false);
+        return;
+      }
       if (res.ok) {
         setMessage(data.message || "Registration successful! You can now access your account.");
         // Store token in localStorage - this is crucial for auth

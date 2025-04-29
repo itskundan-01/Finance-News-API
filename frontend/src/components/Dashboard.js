@@ -77,29 +77,33 @@ export default function Dashboard({ user }) {
         setLoading(false);
         return;
       }
-      
       try {
         const res = await fetch(`${API_BASE}/api/v1/auth/user/me`, {
           headers: { 
             Authorization: `Bearer ${token}` 
           }
         });
-        const data = await res.json();
+        let data;
+        try {
+          data = await res.json();
+        } catch (jsonErr) {
+          setError("Invalid server response. Please try again later.");
+          setLoading(false);
+          return;
+        }
         if (res.ok) {
-          setUserData(data); // Store fetched user data
-          // Optionally update localStorage if needed, though fetching is more reliable
+          setUserData(data);
           localStorage.setItem("user", JSON.stringify(data)); 
         } else {
           setError(data.detail || "Failed to fetch user details.");
-          // Clear potentially stale user data from localStorage
           localStorage.removeItem("user"); 
         }
       } catch (err) {
         setError("Network error while fetching user details.");
         console.error("Error fetching user data:", err);
       }
+      setLoading(false);
     };
-
     fetchUserData();
   }, []); // Run once on component mount
 
@@ -127,13 +131,20 @@ export default function Dashboard({ user }) {
       const res = await fetch(`${API_BASE}/api/v1/auth/user/api-keys`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
       });
-      const data = await res.json();
+      let data;
+      try {
+        data = await res.json();
+      } catch (jsonErr) {
+        setError("Invalid server response. Please try again later.");
+        setLoading(false);
+        return;
+      }
       if (res.ok && data.keys) {
         setKeys(data.keys);
       } else {
         setError(data.detail || "Failed to fetch API keys");
       }
-    } catch {
+    } catch (err) {
       setError("Network error");
     }
     setLoading(false);
@@ -184,7 +195,14 @@ export default function Dashboard({ user }) {
         method: "POST",
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
       });
-      const data = await res.json();
+      let data;
+      try {
+        data = await res.json();
+      } catch (jsonErr) {
+        setError("Invalid server response. Please try again later.");
+        setLoading(false);
+        return;
+      }
       if (res.ok && data.key) {
         setSuccess("API key regenerated successfully.");
         setSnackbar({ 
@@ -204,7 +222,6 @@ export default function Dashboard({ user }) {
   const handleRevoke = async () => {
     if (!selectedKey) return;
     handleRevokeDialogClose();
-    
     setLoading(true);
     setError("");
     setSuccess("");
@@ -217,7 +234,14 @@ export default function Dashboard({ user }) {
         },
         body: JSON.stringify({ key: selectedKey })
       });
-      const data = await res.json();
+      let data;
+      try {
+        data = await res.json();
+      } catch (jsonErr) {
+        setError("Invalid server response. Please try again later.");
+        setLoading(false);
+        return;
+      }
       if (res.ok) {
         setSuccess("API key revoked successfully.");
         setSnackbar({ 
@@ -244,7 +268,14 @@ export default function Dashboard({ user }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ user_email: user?.email, user_name: user?.name || user?.email })
       });
-      const data = await res.json();
+      let data;
+      try {
+        data = await res.json();
+      } catch (jsonErr) {
+        setError("Invalid server response. Please try again later.");
+        setLoading(false);
+        return;
+      }
       if (res.ok && data.key) {
         setSuccess("API key created successfully.");
         setSnackbar({ 

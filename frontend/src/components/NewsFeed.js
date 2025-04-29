@@ -48,12 +48,17 @@ export default function NewsFeed() {
     const fetchUserKey = async () => {
       const token = localStorage.getItem("token");
       if (!token) return;
-      
       try {
         const res = await fetch(`${API_BASE}/api/v1/auth/user/api-keys`, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        const data = await res.json();
+        let data;
+        try {
+          data = await res.json();
+        } catch (jsonErr) {
+          // Ignore, just don't set API key
+          return;
+        }
         if (res.ok && data.keys && data.keys.length > 0) {
           for (const key of data.keys) {
             if (key.is_active) {
@@ -64,10 +69,9 @@ export default function NewsFeed() {
           }
         }
       } catch (err) {
-        console.error("Error fetching API key", err);
+        // Optionally log error
       }
     };
-    
     fetchUserKey();
   }, []);
 
@@ -79,11 +83,18 @@ export default function NewsFeed() {
       const res = await fetch(API_URL, {
         headers: { "X-API-Key": apiKey }
       });
-      const data = await res.json();
+      let data;
+      try {
+        data = await res.json();
+      } catch (jsonErr) {
+        setError("Invalid server response. Please try again later.");
+        setLoading(false);
+        return;
+      }
       if (res.ok && data.data) {
         setNews(data.data);
       } else {
-        setError(data.detail || "Failed to fetch news");
+        setError(data.detail || data.message || "Failed to fetch news");
       }
     } catch (err) {
       setError("Network error");
