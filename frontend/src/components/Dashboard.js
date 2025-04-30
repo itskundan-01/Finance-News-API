@@ -53,6 +53,19 @@ function getUserEmail() {
   }
 }
 
+// Utility to extract a readable error message from backend error responses
+function extractErrorMessage(detail) {
+  if (!detail) return "";
+  if (typeof detail === "string") return detail;
+  if (Array.isArray(detail)) {
+    return detail.map(d => d.msg || JSON.stringify(d)).join(" | ");
+  }
+  if (typeof detail === "object") {
+    return detail.msg || detail.message || JSON.stringify(detail);
+  }
+  return String(detail);
+}
+
 export default function Dashboard({ user }) {
   const theme = useTheme();
   const email = getUserEmail();
@@ -95,7 +108,7 @@ export default function Dashboard({ user }) {
           setUserData(data);
           localStorage.setItem("user", JSON.stringify(data)); 
         } else {
-          setError(data.detail || "Failed to fetch user details.");
+          setError(extractErrorMessage(data.detail) || "Failed to fetch user details.");
           localStorage.removeItem("user"); 
         }
       } catch (err) {
@@ -142,7 +155,7 @@ export default function Dashboard({ user }) {
       if (res.ok && data.keys) {
         setKeys(data.keys);
       } else {
-        setError(data.detail || "Failed to fetch API keys");
+        setError(extractErrorMessage(data.detail) || "Failed to fetch API keys");
       }
     } catch (err) {
       setError("Network error");
@@ -211,7 +224,7 @@ export default function Dashboard({ user }) {
         });
         fetchKeys();
       } else {
-        setError(data.detail || "Failed to regenerate API key");
+        setError(extractErrorMessage(data.detail) || "Failed to regenerate API key");
       }
     } catch {
       setError("Network error");
@@ -250,7 +263,7 @@ export default function Dashboard({ user }) {
         });
         fetchKeys();
       } else {
-        setError(data.detail || "Failed to revoke API key");
+        setError(extractErrorMessage(data.detail) || "Failed to revoke API key");
       }
     } catch {
       setError("Network error");
@@ -284,7 +297,7 @@ export default function Dashboard({ user }) {
         });
         fetchKeys();
       } else {
-        setError(data.detail || data.message || "Failed to create API key");
+        setError(extractErrorMessage(data.detail) || extractErrorMessage(data.message) || "Failed to create API key");
       }
     } catch {
       setError("Network error");
